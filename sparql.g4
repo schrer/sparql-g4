@@ -1,20 +1,19 @@
 grammar sparql;
 
 queryUnit: query;
-
-query: prologue (selectQuery) valuesClause EOF;
+query: prologue (selectQuery | constructQuery | describeQuery | askQuery ) valuesClause EOF;
 
 prologue: ( baseDecl | prefixDecl )*;
-
 baseDecl: 'BASE' IRIREF;
-
 prefixDecl: 'PREFIX' PNAME_NS IRIREF;
 
-selectQuery: selectClause dataClause* whereClause solutionModifier;
+selectQuery: selectClause datasetClause* whereClause solutionModifier;
 subSelect: selectClause whereClause solutionModifier valuesClause;
-
 selectClause: 'SELECT' ('DISTINCT'|'REDUCED')? ((var | ('(' expression 'as' var ')'))+ | '*');
-dataClause: 'FROM' (defaultGraphClause | namedGraphClause);
+constructQuery: 'CONSTRUCT' (constructTemplate datasetClause* whereClause solutionModifier | datasetClause* 'WHERE' '{' triplesTemplate? '}' solutionModifier);
+describeQuery: 'DESCRIBE' ( varOrIri+ | '*' ) datasetClause* whereClause? solutionModifier;
+askQuery: 'ASK' datasetClause* whereClause solutionModifier;
+datasetClause: 'FROM' (defaultGraphClause | namedGraphClause);
 defaultGraphClause: sourceSelector;
 namedGraphClause: 'NAMED' sourceSelector;
 sourceSelector: iri;
@@ -47,8 +46,9 @@ expressionList
     : NIL
     | '(' expression ( ',' expression )* ')'
     ;
-
-
+constructTemplate: '{' constructTriples? '}';
+constructTriples: triplesSameSubject ( '.' constructTriples? )?;
+triplesSameSubject: varOrTerm propertyListNotEmpty | triplesNode propertyList;
 groupGraphPattern: '{' (subSelect | groupGraphPatternSub) '}';
 groupGraphPatternSub: triplesBlock? ( graphPatternNotTriples '.'? triplesBlock? )*;
 triplesBlock: triplesSameSubjectPath ('.' triplesBlock)?;
