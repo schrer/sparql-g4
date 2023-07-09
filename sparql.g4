@@ -38,7 +38,19 @@ limitClause: 'LIMIT' INTEGER;
 offsetClause: 'OFFSET' INTEGER;
 valuesClause: ('VALUES' dataBlock)?;
 update: prologue ( update1 (';' update)? )?;
-update1: ;
+update1
+    : load 
+    | clear 
+    | drop 
+    | add 
+    | move 
+    | copy 
+    | create 
+    | insertData 
+    | deleteData 
+    | deleteWhere 
+    | modify
+    ;
 argList
     : NIL 
     | '(' 'DISTINCT'? expression (',' expression)* ')'
@@ -49,6 +61,27 @@ expressionList
     ;
 constructTemplate: '{' constructTriples? '}';
 constructTriples: triplesSameSubject ( '.' constructTriples? )?;
+load: 'LOAD' 'SILENT'? iri ( 'INTO' graphRef )?;
+clear: 'CLEAR' 'SILENT'? graphRefAll;
+drop: 'DROP' 'SILENT'? graphRefAll;
+create: 'CREATE' 'SILENT'? graphRef;
+add: 'ADD' 'SILENT'? graphOrDefault 'TO' graphOrDefault;
+move: 'MOVE' 'SILENT'? graphOrDefault 'TO' graphOrDefault;
+copy: 'COPY' 'SILENT'? graphOrDefault 'TO' graphOrDefault;
+insertData: 'INSERT' 'DATA' quadData;
+deleteData: 'DELETE' 'DATA' quadData;
+deleteWhere: 'DELETE' 'WHERE' quadPattern;
+modify: ( 'WITH' iri )? ( deleteClause insertClause? | insertClause ) usingClause* 'WHERE' groupGraphPattern;
+deleteClause: 'DELETE' quadPattern;
+insertClause: 'INSERT' quadPattern;
+usingClause: 'USING' ( iri | 'NAMED' iri );
+graphOrDefault: 'DEFAULT' | 'GRAPH'? iri ;
+graphRef: 'GRAPH' iri;
+graphRefAll: graphRef | 'DEFAULT' | 'NAMED' | 'ALL';
+quadPattern: '{' quads '}';
+quadData: '{' quads '}';
+quads: triplesTemplate? ( quadsNotTriples '.'? triplesTemplate? )*;
+quadsNotTriples: 'GRAPH' varOrIri '{' triplesTemplate '}';
 triplesSameSubject: varOrTerm propertyListNotEmpty | triplesNode propertyList;
 triplesTemplate: triplesSameSubject ( '.' triplesTemplate? )?;
 groupGraphPattern: '{' (subSelect | groupGraphPatternSub) '}';
