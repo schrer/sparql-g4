@@ -1,6 +1,8 @@
 grammar sparql;
 
 queryUnit: query;
+updateUnit: update;
+
 query: prologue (selectQuery | constructQuery | describeQuery | askQuery ) valuesClause EOF;
 
 prologue: ( baseDecl | prefixDecl )*;
@@ -37,6 +39,7 @@ limitOffsetClause: (limitClause offsetClause?) | (offsetClause limitClause?);
 limitClause: 'LIMIT' INTEGER;
 offsetClause: 'OFFSET' INTEGER;
 valuesClause: ('VALUES' dataBlock)?;
+
 update: prologue ( update1 (';' update)? )?;
 update1
     : load 
