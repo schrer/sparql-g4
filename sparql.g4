@@ -37,7 +37,8 @@ limitOffsetClause: (limitClause offsetClause?) | (offsetClause limitClause?);
 limitClause: 'LIMIT' INTEGER;
 offsetClause: 'OFFSET' INTEGER;
 valuesClause: ('VALUES' dataBlock)?;
-
+update: prologue ( update1 (';' update)? )?;
+update1: ;
 argList
     : NIL 
     | '(' 'DISTINCT'? expression (',' expression)* ')'
@@ -49,6 +50,7 @@ expressionList
 constructTemplate: '{' constructTriples? '}';
 constructTriples: triplesSameSubject ( '.' constructTriples? )?;
 triplesSameSubject: varOrTerm propertyListNotEmpty | triplesNode propertyList;
+triplesTemplate: triplesSameSubject ( '.' triplesTemplate? )?;
 groupGraphPattern: '{' (subSelect | groupGraphPatternSub) '}';
 groupGraphPatternSub: triplesBlock? ( graphPatternNotTriples '.'? triplesBlock? )*;
 triplesBlock: triplesSameSubjectPath ('.' triplesBlock)?;
